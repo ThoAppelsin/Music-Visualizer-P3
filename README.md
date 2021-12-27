@@ -2,10 +2,10 @@
 This project is still very much in development.
 
 A music visualizer written for Processing 3 which currently visualizes the primary audio input (which is probably your computer's microphone unless you make some adjustments).
-You should somehow feed a copy of the audio output of your computer back into your computer as an audio input, and then make that the primary input, so that the visualizer reacts to the music you are playing.
+You should somehow feed a copy of the audio output of your computer back into your computer as an input (aka. "stereo mix" on Windows), and then make it the primary input, so that the visualizer reacts to the music you are playing.
 
 ## An overview of the building blocks
-The flocking behavior of the visualizer particles (the movements you see without any music playing in the background) is based on [@ozdenizdolu](https://github.com/ozdenizdolu)'s old work.
+The flocking behavior of the visualizer particles (the movements you see without any music playing in the background) is based on [@ozdenizdolu](https://github.com/ozdenizdolu)'s old work. See [this video](https://www.youtube.com/watch?v=mhjuuHl6qHM) for more on the flocking algorithm.
 
 First a 250/255 multiplicative, then a 1 point subtractive dimming filter is applied between each frame to achieve a trailing effect.
 

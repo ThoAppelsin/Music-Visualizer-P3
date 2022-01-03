@@ -8,17 +8,19 @@ class SoundStreamAnalyzer {
   int nyquist = sampleRate / 2;
   
   int stressedRange = -1;
-  private final double stressPreservingEnergyAverage = 0.02;
-  private final double stressRelievingEnergyAverage = 0.00001;
-  private final double[] stressRelievingEnergyDeviances = new double[]{-.003, -.003, -.003};
-  private final double[] stressRelievingDifferences = new double[]{-.0002, -.0002};
-  private final double[] stressPreservingEnergyDeviances = new double[]{.0005, .0005, .0005};
-  private final double[] stressPreservingDifferences = new double[]{.0003, .0003};
-  private final double[] stressInitiatingDerivativeDifferences3 = new double[]{.0007, .0007};
-  private final double[] stressInitiatingDerivativeDifferences2 = new double[]{.001};
-  private final double stressInitiatingDifference2 = .0001;
-  private final double stressInitiatingDifference1 = .001;
-  private final double stressInitiatingDifference0 = .002;
+  private final double   stressPreservingNormStressAverage = 0.2;
+  private final double[] stressPreservingStdDifferences = new double[]{.05, .05};
+  private final double[] stressPreservingNormEnergy = new double[]{.35, .35};
+  
+  private final double   stressRelievingNormStressAverage = 0.15;
+  private final double[] stressRelievingStdDifferences = new double[]{-1, -1};
+  private final double[] stressRelievingNormEnergy = new double[]{.2, .2, .2};
+  
+  private final double[] stressInitiatingStdDerivativeDifferences3 = new double[]{.7, .7};
+  private final double[] stressInitiatingStdDerivativeDifferences2 = new double[]{1};
+  private final double stressInitiatingStdDifference2 = .05;
+  private final double stressInitiatingStdDifference1 = .9;
+  private final double stressInitiatingStdDifference0 = 2.7;
   boolean actionPotential = false;
   
   FrequencyRangeAnalyzer[] fras;
@@ -27,12 +29,10 @@ class SoundStreamAnalyzer {
     CircularDoubleBuffer energyLog;
     CircularDoubleBuffer energyDifferences;
     
-    float multiplier = 1;
-    
     boolean stressed = false;
     boolean actionPotential = false;
     
-    double runningStressAverage = 0;
+    double runningNormStressAverage = 0;
     
     int lowFreq, highFreq;
     
@@ -44,14 +44,9 @@ class SoundStreamAnalyzer {
       this.highFreq = highFreq;
     }
     
-    FrequencyRangeAnalyzer(int lowFreq, int highFreq, float multiplier) {
-      this(lowFreq, highFreq);
-      this.multiplier = multiplier;
-    }
-    
     void update() {
-      double currentEnergy = getEnergyNormalized(lowFreq, highFreq) * multiplier;
-      double energyDiff = currentEnergy - energyLog.peek();
+      double currentEnergy = getEnergyNormalized(lowFreq, highFreq);
+      double energyDiff = currentEnergy - energyLog.get(0);
       energyLog.add(currentEnergy);
       energyDifferences.add(energyDiff);
       
@@ -59,25 +54,39 @@ class SoundStreamAnalyzer {
       actionPotential = false;
       
       if (stressed) {
-        runningStressAverage = 0.98 * runningStressAverage + 0.02 * currentEnergy;
-        int stressLevel = runningStressAverage > stressPreservingEnergyAverage ? 1 : 0
-                        + (energyDifferences.greaterThan(stressPreservingDifferences) ? 1 : 0)
-                        + (energyLog.devianceGreaterThan(stressPreservingEnergyDeviances) ? 1 : 0)
-                        + (energyDifferences.greaterThan(stressRelievingDifferences) ? 0 : -1)
-                        + (energyLog.devianceGreaterThan(stressRelievingEnergyDeviances) ? 0 : -1)
-                        + (energyLog.runningAverage < stressRelievingEnergyAverage ? 0 : -1);
+        runningNormStressAverage = 0.98 * runningNormStressAverage + 0.02 * energyLog.getNorm(0);
+        int stressLevel = (runningNormStressAverage > stressPreservingNormStressAverage ? 1 : 0)
+                        + (energyDifferences.greaterThanStd(stressPreservingStdDifferences) ? 1 : 0)
+                        + (energyLog.greaterThanNorm(stressPreservingNormEnergy) ? 1 : 0)
+                        
+                        + (runningNormStressAverage > stressRelievingNormStressAverage ? 0 : -1)
+                        + (energyDifferences.greaterThanStd(stressRelievingStdDifferences) ? 0 : -1)
+                        + (energyLog.greaterThanNorm(stressRelievingNormEnergy) ? 0 : -1);
+        println("stress pres",
+                runningNormStressAverage > stressPreservingNormStressAverage ? "x" : ".",
+                energyDifferences.greaterThanStd(stressPreservingStdDifferences) ? "x" : ".",
+                energyLog.greaterThanNorm(stressPreservingNormEnergy) ? "x" : ".",
+                runningNormStressAverage > stressRelievingNormStressAverage ? "x" : ".",
+                energyDifferences.greaterThanStd(stressRelievingStdDifferences) ? "x" : ".",
+                energyLog.greaterThanNorm(stressRelievingNormEnergy) ? "x" : ".");
         if (stressLevel < 0) {
           stressed = false;
-          //println("stress down");
+          // println("stress down");
         }
       }
-      else if ((energyDifferences.derivativeGreaterThan(stressInitiatingDerivativeDifferences3) && energyDifferences.get(2) > stressInitiatingDifference2) ||
-               (energyDifferences.derivativeGreaterThan(stressInitiatingDerivativeDifferences2) && energyDifferences.get(1) > stressInitiatingDifference1) ||
-               (energyDifferences.peek() > stressInitiatingDifference0)) {
+      else if ((energyDifferences.derivativeGreaterThanStd(stressInitiatingStdDerivativeDifferences3) && energyDifferences.getStd(2) > stressInitiatingStdDifference2) ||
+               (energyDifferences.derivativeGreaterThanStd(stressInitiatingStdDerivativeDifferences2) && energyDifferences.getStd(1) > stressInitiatingStdDifference1) ||
+               (energyDifferences.getStd(0) > stressInitiatingStdDifference0)) {
         stressed = true;
         actionPotential = true;
-        runningStressAverage = currentEnergy;
-        //println("AP!");
+        runningNormStressAverage = energyLog.getNorm(0);
+        println("action potential",
+                runningNormStressAverage,
+                energyDifferences.derivativeGreaterThanStd(stressInitiatingStdDerivativeDifferences3) ? "x" : ".",
+                energyDifferences.getStd(2) > stressInitiatingStdDifference2 ? "x" : ".",
+                energyDifferences.derivativeGreaterThanStd(stressInitiatingStdDerivativeDifferences2) ? "x" : ".",
+                energyDifferences.getStd(1) > stressInitiatingStdDifference1 ? "x" : ".",
+                energyDifferences.getStd(0) > stressInitiatingStdDifference0 ? "x" : ".");
       }
     }
   }
@@ -94,10 +103,10 @@ class SoundStreamAnalyzer {
     
     fras = new FrequencyRangeAnalyzer[] {
       new FrequencyRangeAnalyzer(20, 140),
-      new FrequencyRangeAnalyzer(140, 400, 3.5),
-      new FrequencyRangeAnalyzer(400, 2600, 8),
-      new FrequencyRangeAnalyzer(2600, 5200, 10),
-      new FrequencyRangeAnalyzer(5200, 14000, 10)
+      new FrequencyRangeAnalyzer(140, 400),
+      new FrequencyRangeAnalyzer(400, 2600),
+      new FrequencyRangeAnalyzer(2600, 5200),
+      new FrequencyRangeAnalyzer(5200, 14000)
     };
   }
   
@@ -111,7 +120,7 @@ class SoundStreamAnalyzer {
     actionPotential = false;
     
     if (stressedRange >= 0) {
-      println(stressedRange);
+      // println(stressedRange);
       if (!fras[stressedRange].stressed) {
         stressedRange = -1;
       }

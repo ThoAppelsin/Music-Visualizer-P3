@@ -4,8 +4,14 @@ class Patch {
     float mass;
     float cohesionPower = 1, separationPower = 1, alignPower = 4;
     float speedMultiplier = 0.8;
+
     int flockingCD = 0;
-    color c = color(random(360), 255, 255);
+    float cH = random(360);
+    float cS = 255;
+    float cB = 255;
+    
+    SoundStreamAnalyzer ssa;
+    
     Patch() {
         this.position = new PVector(random(width), random(height));
         this.velocity = new PVector(random(-2,3)*speedMultiplier, random(-2, 3)*speedMultiplier);
@@ -20,9 +26,10 @@ class Patch {
         this.perceptionRange = perceptionRange;
         this.mass = mass;
     }
-    Patch(PVector position) {
+    Patch(PVector position, SoundStreamAnalyzer ssa) {
         this();
         this.position = position;
+        this.ssa = ssa;
     }
 
     boolean isVisible(Patch p) {
@@ -118,26 +125,27 @@ class Patch {
         this.position.y = (this.position.y + height) % height;
         
         
-        this.acceleration = PVector.mult(align(patches), ParameterSpace.alignPower);
-        this.acceleration.add(PVector.mult(cohesion(patches), ParameterSpace.cohesionPower));
-        this.acceleration.add(PVector.mult(separation(patches), ParameterSpace.separationPower));
+        this.acceleration = PVector.mult(align(patches), Parameters.Flocking.alignPower);
+        this.acceleration.add(PVector.mult(cohesion(patches), Parameters.Flocking.cohesionPower));
+        this.acceleration.add(PVector.mult(separation(patches), Parameters.Flocking.separationPower));
     }
     int sigmoid(float x, float steepness, float inflection) {
       return int(255f / (1 + exp(-steepness * (x - inflection))));
     }
     
     void draw() {
-      c = c & (0xFFFFFF) | sigmoid(this.velocity.mag(), 0.15, 15) << 24;
       //stroke(0);
       //c = color(255);
       //fill(c);
       //ellipse(position.x, position.y, 40, 40);
       //blendMode(DIFFERENCE);
-      //image(ParameterSpace.img, this.position.x, this.position.y);
-      //blend(ParameterSpace.img, 0, 0, ParameterSpace.img.width, ParameterSpace.img.height, 
-      //int(this.position.x), int(this.position.y),  ParameterSpace.img.width, ParameterSpace.img.height, DIFFERENCE);
+      //image(Parameters.Flocking.img, this.position.x, this.position.y);
+      //blend(Parameters.Flocking.img, 0, 0, Parameters.Flocking.img.width, Parameters.Flocking.img.height, 
+      //int(this.position.x), int(this.position.y),  Parameters.Flocking.img.width, Parameters.Flocking.img.height, DIFFERENCE);
+      
+      cB = ssa.actionPotential ? 255 : (0.95 * cB + 0.05 * (ssa.stressedRange == -1 ? 100 : 255));
       strokeWeight(3);
-      stroke(c);
+      stroke(color(cH, cS, cB, sigmoid(this.velocity.mag(), 0.15, 15)));
       line(this.position.x, this.position.y, this.position.x + this.velocity.x * 20, this.position.y + this.velocity.y * 20);
     }
 }

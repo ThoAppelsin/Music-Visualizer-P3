@@ -69,7 +69,7 @@ class SoundStreamAnalyzer {
                 runningNormStressAverage > stressRelievingNormStressAverage ? "x" : ".",
                 energyDifferences.greaterThanStd(stressRelievingStdDifferences) ? "x" : ".",
                 energyLog.greaterThanNorm(stressRelievingNormEnergy) ? "x" : ".");
-        if (stressLevel < 0) {
+        if (stressLevel < -1) {
           stressed = false;
           // println("stress down");
         }

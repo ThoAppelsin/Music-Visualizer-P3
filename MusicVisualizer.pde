@@ -7,7 +7,7 @@ SoundStreamAnalyzer ssa;
 ArrayList<Patch> patches;
 
 void setup() {
-  size(960, 600, P2D);
+  size(1920, 1080, P2D);
   //fullScreen(P2D);
   //Parameters.img = loadImage("img.png");
   textSize(20);
@@ -17,18 +17,18 @@ void setup() {
   ssa = new SoundStreamAnalyzer(this, new AudioIn(this, 0));
   
   patches = new ArrayList<Patch>();
-  for (int i = 0; i < 400; i++) {
+  for (int i = 0; i < sqrt(width * height) / 2.2; i++) {
     int pixelX = int(random(width));
     int pixelY = int(random(height));
     patches.add(new Patch(new PVector(pixelX, pixelY), ssa));
     // patches.add(new Patch());
   }
-  frameRate(30);
+  frameRate(60);
   //measure = 1 * 60 * 30 / bpm;
 }
 
 void mousePressed() {
-  background(0);
+  //background(0);
   randomize(4);
   floatFrames = 0;
 }
@@ -126,7 +126,7 @@ void draw() {
   blendMode(BLEND);
   
   if (ssa.actionPotential) {
-    subflockize(2.2);
+    subflockize(0.25 + 40 * sqrt(ssa.avgAvg()));
   }
   
   //floatFrames += 1;

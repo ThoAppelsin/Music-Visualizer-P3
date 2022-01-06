@@ -24,6 +24,14 @@ class SoundStreamAnalyzer {
   boolean actionPotential = false;
   
   FrequencyRangeAnalyzer[] fras;
+   
+  float avgAvg() {
+    float sum = 0;
+    for (FrequencyRangeAnalyzer fra : fras) {
+      sum += fra.energyLog.recentAverage;
+    }
+    return sum / fras.length;
+  }
   
   class FrequencyRangeAnalyzer {
     CircularDoubleBuffer energyLog;

@@ -52,17 +52,30 @@ class Patch {
         this.alignPower = alignPower;
         return this;
     }
-    int countVisibles(ArrayList<Patch> patches) {
-      int count = 0;
+    
+    ArrayList<Patch> getVisibles(ArrayList<Patch> patches) {
+      ArrayList<Patch> visibles = new ArrayList<Patch>();
       for (Patch patch : patches)
         if (isVisible(patch))
-          count++;
+          visibles.add(patch);
       
-      return count;
+      return visibles;
     }
+    
+    ArrayList<Patch> getFlock(ArrayList<Patch> patches) {
+      ArrayList<Patch> flock = getVisibles(patches);
+      flock.add(this);
+      return flock;
+    }
+    
+    int countVisibles(ArrayList<Patch> patches) {
+      return getVisibles(patches).size();
+    }
+    
     void flockingCooldown(int frames) {
       flockingCD = frames;
     }
+    
     PVector separation(ArrayList<Patch> patches) {
         PVector steering = new PVector();
         //int totalPerceptiblePatches = 0;
@@ -79,6 +92,7 @@ class Patch {
    
         return steering;
     }
+    
     PVector cohesion(ArrayList<Patch> patches) {
         PVector avg = this.position.copy();
         int totalPerceptiblePatches = 1;
@@ -95,6 +109,7 @@ class Patch {
         steering.div(this.mass);
         return steering;
     }
+    
     PVector align(ArrayList<Patch> patches) {
         PVector avg = this.velocity.copy();
         int totalPerceptiblePatches = 1;
@@ -111,6 +126,7 @@ class Patch {
         steering.div(this.mass);
         return steering;
     }
+    
     void update(ArrayList<Patch> patches) {
         //println(frameCount, "pos",this.position.toString());
         //println(frameCount, "vel", this.velocity.toString());
@@ -129,6 +145,7 @@ class Patch {
         this.acceleration.add(PVector.mult(cohesion(patches), Parameters.Flocking.cohesionPower));
         this.acceleration.add(PVector.mult(separation(patches), Parameters.Flocking.separationPower));
     }
+    
     int sigmoid(float x, float steepness, float inflection) {
       return int(255f / (1 + exp(-steepness * (x - inflection))));
     }
@@ -146,6 +163,6 @@ class Patch {
       cB = ssa.actionPotential ? 255 : (0.95 * cB + 0.05 * (ssa.stressedRange == -1 ? 100 : 255));
       strokeWeight(3);
       stroke(color(cH, cS, cB, sigmoid(this.velocity.mag(), 0.15, 15)));
-      line(this.position.x, this.position.y, this.position.x + this.velocity.x * 20, this.position.y + this.velocity.y * 20);
+      line(this.position.x, this.position.y, this.position.x + this.velocity.x * 5, this.position.y + this.velocity.y * 5);
     }
 }

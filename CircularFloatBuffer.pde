@@ -4,6 +4,7 @@ class CircularDoubleBuffer {
   final int size;
   double runningAverage = 0;
   double runningVariance = 0;
+  double recentAverage = 0;
   
   CircularDoubleBuffer(int size) {
     this.size = size;
@@ -33,6 +34,8 @@ class CircularDoubleBuffer {
     head = (head + 1) % size;
     buffer[head] = value;
     runningAverage = runningAverage * Parameters.Normalizing.averageFactor + value * (1 - Parameters.Normalizing.averageFactor);
+    
+    recentAverage = recentAverage * Parameters.Normalizing.recentFactor + value * (1 - Parameters.Normalizing.recentFactor);
     
     double delta = value - runningAverage;
     runningVariance = runningVariance * Parameters.Standardizing.varianceFactor + delta * delta * (1 - Parameters.Standardizing.varianceFactor);

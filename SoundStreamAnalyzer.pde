@@ -24,6 +24,14 @@ class SoundStreamAnalyzer {
   boolean actionPotential = false;
   
   FrequencyRangeAnalyzer[] fras;
+   
+  float avgRecentEnergyAvg() {
+    float sum = 0;
+    for (FrequencyRangeAnalyzer fra : fras) {
+      sum += fra.energyLog.recentAverage;
+    }
+    return sum / fras.length;
+  }
   
   class FrequencyRangeAnalyzer {
     CircularDoubleBuffer energyLog;
@@ -69,7 +77,7 @@ class SoundStreamAnalyzer {
                 runningNormStressAverage > stressRelievingNormStressAverage ? "x" : ".",
                 energyDifferences.greaterThanStd(stressRelievingStdDifferences) ? "x" : ".",
                 energyLog.greaterThanNorm(stressRelievingNormEnergy) ? "x" : ".");
-        if (stressLevel < 0) {
+        if (stressLevel < -1) {
           stressed = false;
           // println("stress down");
         }

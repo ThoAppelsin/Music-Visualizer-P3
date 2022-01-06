@@ -25,7 +25,7 @@ class SoundStreamAnalyzer {
   
   FrequencyRangeAnalyzer[] fras;
    
-  float avgAvg() {
+  float avgRecentEnergyAvg() {
     float sum = 0;
     for (FrequencyRangeAnalyzer fra : fras) {
       sum += fra.energyLog.recentAverage;

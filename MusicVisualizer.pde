@@ -126,7 +126,7 @@ void draw() {
   blendMode(BLEND);
   
   if (ssa.actionPotential) {
-    subflockize(0.25 + 40 * sqrt(ssa.avgAvg()));
+    subflockize(0.25 + 40 * sqrt(ssa.avgRecentEnergyAvg()));
   }
   
   //floatFrames += 1;

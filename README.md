@@ -2,18 +2,22 @@
 This project is still very much in development.
 A sketch of a changelog is available at the very end of this readme.
 
-A music visualizer written for Processing 3 which currently visualizes the primary audio input.
-You should somehow feed the audio output of your computer back into your computer as the primary audio input to make the visualizer react to the music you're playing. We have two ways to do it:
+It is music visualizer written for Processing 3 which currently visualizes the primary audio input. See our latest demo [on YouTube](https://www.youtube.com/watch?v=5WBuLbDNuXA).
+
+## Setup
+You will need [Processing 3](https://processing.org/download) and also its Sound library installed. Libraries can be installed through the Processing application, from the *Sketch > Import Library... > Add Library...* menu.
+
+You should somehow feed the audio output of your computer back into your computer as the primary audio input to make the visualizer react to the music you're playing. We can think of two ways to do it:
 1) Turn up the volume and bring your microphone close to your speakers.
 2) Use a software to feed (a copy of) the audio output back as an audio input. Windows computers with Realtek drivers come with a virtual recording device called "stereo mix" that does just that.
 
 ## An overview of the building blocks
 The flocking behavior of the visualizer particles (the movements you see without any music playing in the background) is based on [@ozdenizdolu](https://github.com/ozdenizdolu)'s old work. See [this video](https://www.youtube.com/watch?v=mhjuuHl6qHM) for more on the flocking algorithm.
 
-First a 250/255 multiplicative, then a 1 point subtractive dimming filter is applied between each frame to achieve a trailing effect.
+First a 250/255 multiplicative, then a 1 point subtractive dimming filter is applied between each frame to achieve the trailing effect of the particles.
 
-To make the particles react to the beats:
-- For 5 disjoint (← might be a point to improve) frequency ranges:
+To make the particles react to beats:
+- For 5 disjoint frequency ranges:
   - *Stressful* moments in the music are *sensed* by observing the *power*, and their change over time.
   - Some [hysteresis](https://en.wikipedia.org/wiki/Hysteresis#Electronic_circuits) is added to this sensing of stress (i.e. there is a gap between the conditions that initiate and relieve stress, during which the state of stressfulness is preserved) to prevent it from alternating rapidly.
   - An *action potential* is fired up momentarily whenever the stress is initiated (i.e. on the stress pos-edge).
